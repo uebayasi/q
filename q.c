@@ -266,21 +266,7 @@ cmp_x_b(const void *p, const void *q)
 	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
 }
 
-/* a > 5 */
-struct cond cond_a = {
-	.cond = cond_LT,
-	.off = offsetof(struct x, a),
-	.param = 5,
-};
-
-/* b > 4 */
-struct cond cond_b = {
-	.cond = cond_LT,
-	.off = offsetof(struct x, b),
-	.param = 4,
-};
-
-void
+static void
 cb_x(struct tab *tab, int dim, int idx, struct sel *sels)
 {
 	struct x *x = xx(tab_x.data, idx);
@@ -297,6 +283,32 @@ cb_x(struct tab *tab, int dim, int idx, struct sel *sels)
 	printf(") matches!\n");
 }
 
+void
+dump(void)
+{
+	struct x *x = tab_x.data;
+	int i;
+
+	for (i = 0; i < tab_x.nrows; i++) {
+		printf("%d: (%d, %d)\n", i, x->a, x->b);
+		x++;
+	}
+}
+
+/* a > 5 */
+struct cond cond_a = {
+	.cond = cond_LT,
+	.off = offsetof(struct x, a),
+	.param = 5,
+};
+
+/* b > 4 */
+struct cond cond_b = {
+	.cond = cond_LT,
+	.off = offsetof(struct x, b),
+	.param = 4,
+};
+
 static int *tab_x_idxs[2];
 static int (*tab_x_idxcmps[2])(const void *, const void *) = {
 	cmp_x_a,
@@ -309,18 +321,6 @@ static struct tab tab_x = {
 	.idxs = tab_x_idxs,
 	.idxcmps = tab_x_idxcmps,
 };
-
-void
-dump(void)
-{
-	struct x *x = tab_x.data;
-	int i;
-
-	for (i = 0; i < tab_x.nrows; i++) {
-		printf("%d: (%d, %d)\n", i, x->a, x->b);
-		x++;
-	}
-}
 
 int
 main(int c, char *v[])
