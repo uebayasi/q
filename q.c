@@ -65,27 +65,27 @@ idx_int(void *x, int off)
 }
 
 static int
-cond_LT(void *x, int off, int p)
+cond_LT(void *v, int off, int p)
 {
-	return (idx_int(x, off) > p);
+	return (idx_int(v, off) > p);
 }
 
 static int
-cond_GT(void *x, int off, int p)
+cond_GT(void *v, int off, int p)
 {
-	return (idx_int(x, off) < p);
+	return (idx_int(v, off) < p);
 }
 
 static int
-cond_LE(void *x, int off, int p)
+cond_LE(void *v, int off, int p)
 {
-	return (idx_int(x, off) >= p);
+	return (idx_int(v, off) >= p);
 }
 
 static int
-cond_GE(void *x, int off, int p)
+cond_GE(void *v, int off, int p)
 {
-	return (idx_int(x, off) <= p);
+	return (idx_int(v, off) <= p);
 }
 
 static void
