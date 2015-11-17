@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #define MAX2(a,b) (((a)>(b))?(a):((a)<(b))?(b):(a))
@@ -231,13 +232,16 @@ static void
 q_open(void)
 {
 	/* database creation */
+	struct stat st;
 
 	int fd = open("d", O_RDONLY);
 	if (fd < 0)
 		exit(1);
 	printf("open'ed!\n");
 
-	x_tab.n = 10;
+	if (fstat(fd, &st) < 0)
+		exit(1);
+	x_tab.n = st.st_size / sizeof(struct x);
 	x_tab.d = mmap(NULL, sizeof(struct x) * x_tab.n, PROT_READ, MAP_FILE | MAP_SHARED, fd, 0);
 	if (x_tab.d == (void *)-1)
 		exit(1);
