@@ -38,6 +38,7 @@ struct sel {
 
 struct tab {
 	const char *name;
+	int fd;
 	void *data;
 	int nrows;
 	int ncols;
@@ -120,8 +121,7 @@ q_sel(struct tab *tab, struct sel *sel)
 static void
 q_sel_done(struct sel *sel)
 {
-	if (sel->ord.vec != NULL)
-		free(sel->ord.vec);
+	free(sel->ord.vec);
 }
 
 #define	ITER_CB_DECL(f)	void (*f)(struct tab *, int, int, struct sel *)
@@ -206,18 +206,25 @@ q_open(struct tab *tab)
 	struct stat st;
 	int i;
 
-	int fd = open("d", O_RDONLY);
-	if (fd < 0)
+	tab->fd = open("d", O_RDONLY);
+	if (tab->fd < 0)
 		exit(1);
-	if (fstat(fd, &st) < 0)
+	if (fstat(tab->fd, &st) < 0)
 		exit(1);
 	tab->nrows = st.st_size / tab->colsize;
 	tab->data = mmap(NULL, tab->colsize * tab->nrows, PROT_READ,
-	    MAP_FILE | MAP_SHARED, fd, 0);
+	    MAP_FILE | MAP_SHARED, tab->fd, 0);
 	if (tab->data == (void *)-1)
 		exit(1);
 	for (i = 0; i < tab->ncols; i++)
 		q_idx(tab, i);
+}
+
+static void
+q_close(struct tab *tab)
+{
+	(void)munmap(tab->data, tab->colsize * tab->nrows);
+	close(tab->fd);
 }
 
 /******************************************************************************/
@@ -334,6 +341,8 @@ main(int c, char *v[])
 	conds2[0] = &cond_a;
 	conds2[1] = &cond_b;
 	q_query(&tab_x, cb_x, 2, conds2);
+
+	q_close(&tab_x);
 
 	return 0;
 }
