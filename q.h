@@ -27,22 +27,22 @@ struct tab {
 	const char *name;
 	int fd;
 	void *data;
-	int nrows;
-	int ncols;
 	int colsize;
-	int **idxs;
+	int ncols;
+	int nrows;
 	int (**idxcmps)(const void *, const void *);
+	int **idxs;
 };
+
+/******************************************************************************/
 
 #define	ITER_CB_DECL(f)	void (*f)(struct tab *, int, int, struct sel *)
 
-static inline int
-idx_int(void *x, int off)
-{
-	char *cp = (char *)x + off;
+void q_query(struct tab *, ITER_CB_DECL(), int, struct cond *[]);
+void q_open(struct tab *);
+void q_close(struct tab *);
 
-	return (*(int *)cp);
-}
+/******************************************************************************/
 
 enum Q_SEL_OP {
 	Q_SEL_OP_LT,
@@ -51,10 +51,12 @@ enum Q_SEL_OP {
 	Q_SEL_OP_GE,
 };
 
-/******************************************************************************/
+static inline int
+idx_int(void *x, int off)
+{
+	char *cp = (char *)x + off;
 
-void q_query(struct tab *, ITER_CB_DECL(), int, struct cond *[]);
-void q_open(struct tab *);
-void q_close(struct tab *);
+	return (*(int *)cp);
+}
 
 /******************************************************************************/

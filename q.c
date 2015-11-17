@@ -173,6 +173,8 @@ q_open(struct tab *tab)
 		exit(1);
 	if (fstat(tab->fd, &st) < 0)
 		exit(1);
+	if (st.st_size % tab->colsize != 0)
+		exit(1);
 	tab->nrows = st.st_size / tab->colsize;
 	tab->data = mmap(NULL, tab->colsize * tab->nrows, PROT_READ,
 	    MAP_FILE | MAP_SHARED, tab->fd, 0);

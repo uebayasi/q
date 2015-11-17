@@ -89,17 +89,17 @@ struct cond cond_b = {
 	.param = 4,
 };
 
-static int *tab_x_idxs[2];
 static int (*tab_x_idxcmps[2])(const void *, const void *) = {
 	cmp_x_a,
 	cmp_x_b,
 };
+static int *tab_x_idxs[2];
 static struct tab tab_x = {
 	.name = "d",
 	.ncols = 2,
 	.colsize = sizeof(struct x),
-	.idxs = tab_x_idxs,
 	.idxcmps = tab_x_idxcmps,
+	.idxs = tab_x_idxs,
 };
 
 int
