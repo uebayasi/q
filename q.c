@@ -118,21 +118,20 @@ q_iter(struct tab *tab, ITER_CB_DECL(cb), int dim, struct sel *sels,
 	int min = minord(sels, dim);
 	int max = maxord(sels, dim);
 	int *curs[dim];
-	int i, j;
+	int i, j, matched;
 
 	for (i = 0; i < dim; i++)
 		curs[i] = sels[i].ord.vec;
 	for (i = min; i <= max; i++) {
+		matched = 0;
 		for (j = 0; j < dim; j++) {
 			while (*curs[j] < i)
 				curs[j]++;
-			/* assert(*curs[j] >= i) */
 			if (*curs[j] > i)
-				continue;
-			/* assert(*curs[j] == i) */
+				break;
+			matched++;
 		}
-		if (j == dim)
-			/* all matched */
+		if (matched == dim)
 			(*cb)(tab, dim, i, sels, conds);
 	}
 }
