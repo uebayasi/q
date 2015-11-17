@@ -225,19 +225,21 @@ cmp_x_b(const void *p, const void *q)
 }
 
 static void
-q_idx(int n, int (*cmp)(const void *, const void *), int **ridx)
+q_idx(struct tab *tab, int dim)
 {
+	int **ridx = &tab->idxs[dim];
+	int (*cmp)(const void *, const void *) = tab->idxcmps[dim];
 	int i;
 
-	int *idx = malloc(sizeof(int) * tab_x.nrows);
-	for (i = 0; i < tab_x.nrows; i++)
+	int *idx = malloc(sizeof(int) * tab->nrows);
+	for (i = 0; i < tab->nrows; i++)
 		idx[i] = i;
-	qsort(idx, tab_x.nrows, sizeof(int), cmp);
+	qsort(idx, tab->nrows, sizeof(int), cmp);
 	*ridx = idx;
 }
 
 static void
-q_open(void)
+q_open(struct tab *tab)
 {
 	struct stat st;
 	int i;
@@ -247,13 +249,13 @@ q_open(void)
 		exit(1);
 	if (fstat(fd, &st) < 0)
 		exit(1);
-	tab_x.nrows = st.st_size / sizeof(struct x);
-	tab_x.data = mmap(NULL, sizeof(struct x) * tab_x.nrows, PROT_READ,
+	tab->nrows = st.st_size / sizeof(struct x);
+	tab->data = mmap(NULL, sizeof(struct x) * tab->nrows, PROT_READ,
 	    MAP_FILE | MAP_SHARED, fd, 0);
-	if (tab_x.data == (void *)-1)
+	if (tab->data == (void *)-1)
 		exit(1);
-	for (i = 0; i < tab_x.ncols; i++)
-		q_idx(tab_x.nrows, tab_x.idxcmps[i], &tab_x.idxs[i]);
+	for (i = 0; i < tab->ncols; i++)
+		q_idx(tab, i);
 }
 
 /******************************************************************************/
@@ -320,7 +322,7 @@ main(int c, char *v[])
 	struct cond *conds1[1];
 	struct cond *conds2[2];
 
-	q_open();
+	q_open(&tab_x);
 
 	dump();
 
