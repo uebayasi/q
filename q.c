@@ -43,6 +43,7 @@ struct tab {
 	int ncols;
 	int colsize;
 	int **idxs;
+	int (**idxcmps)(const void *, const void *);
 };
 
 /******************************************************************************/
@@ -156,6 +157,7 @@ q_iter(struct tab *tab, ITER_CB_DECL(cb), int dim, struct sel *sels)
 		int *cur;
 	} curs[dim];
 	int i, j;
+
 	for (j = 0; j < dim; j++)
 		curs[j].cur = sels[j].ord.vec;
 	for (i = min; i <= max; i++) {
@@ -207,7 +209,6 @@ cmp_x_a(const void *p, const void *q)
 {
 	const int pi = *(const int *)p;
 	const int qi = *(const int *)q;
-
 	const int pv = xx(tab_x.data, pi)->a;
 	const int qv = xx(tab_x.data, qi)->a;
 	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
@@ -218,7 +219,6 @@ cmp_x_b(const void *p, const void *q)
 {
 	const int pi = *(const int *)p;
 	const int qi = *(const int *)q;
-
 	const int pv = xx(tab_x.data, pi)->b;
 	const int qv = xx(tab_x.data, qi)->b;
 	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
@@ -239,13 +239,12 @@ q_idx(int n, int **ridx, int (*cmp)(const void *, const void *))
 static void
 q_open(void)
 {
-	/* database creation */
 	struct stat st;
+	int i;
 
 	int fd = open("d", O_RDONLY);
 	if (fd < 0)
 		exit(1);
-
 	if (fstat(fd, &st) < 0)
 		exit(1);
 	tab_x.nrows = st.st_size / sizeof(struct x);
@@ -253,9 +252,8 @@ q_open(void)
 	    MAP_FILE | MAP_SHARED, fd, 0);
 	if (tab_x.data == (void *)-1)
 		exit(1);
-
-	q_idx(tab_x.nrows, &tab_x.idxs[0], cmp_x_a);
-	q_idx(tab_x.nrows, &tab_x.idxs[1], cmp_x_b);
+	for (i = 0; i < tab_x.ncols; i++)
+		q_idx(tab_x.nrows, &tab_x.idxs[i], tab_x.idxcmps[i]);
 }
 
 /******************************************************************************/
@@ -292,11 +290,16 @@ iter_cb(struct tab *tab, int dim, int idx, struct sel *sels)
 }
 
 static int *tab_x_idxs[2];
+static int (*tab_x_idxcmps[2])(const void *, const void *) = {
+	cmp_x_a,
+	cmp_x_b,
+};
 static struct tab tab_x = {
 	.name = "d",
 	.ncols = 2,
 	.colsize = sizeof(struct x),
 	.idxs = tab_x_idxs,
+	.idxcmps = tab_x_idxcmps,
 };
 
 void
