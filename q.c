@@ -41,24 +41,9 @@ struct tab {
 	void *data;
 	int nrows;
 	int ncols;
+	int colsize;
 	int **idxs;
 };
-
-/******************************************************************************/
-
-struct x {
-	int a;
-	int b;
-};
-
-static inline struct x *
-xx(void *v, int idx)
-{
-	struct x *x = (struct x *)v;
-	return &x[idx];
-}
-
-static struct tab tab_x;
 
 /******************************************************************************/
 
@@ -114,8 +99,10 @@ q_sel(struct tab *tab, struct sel *sel)
 	(void)cond_GE;
 
 	for (i = 0; i < sel->idx.len; i++) {
-		if ((*sel->cond->cond)(xx(tab->data, sel->idx.vec[i]),
-		    sel->cond->off, sel->cond->param))
+		void *v;
+
+		v = (char *)tab->data + tab->colsize * sel->idx.vec[i];
+		if ((*sel->cond->cond)(v, sel->cond->off, sel->cond->param))
 			break;
 	}
 	if (i == sel->idx.len)
@@ -200,6 +187,20 @@ q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, struct cond *conds[])
 }
 
 /******************************************************************************/
+
+struct x {
+	int a;
+	int b;
+};
+
+static inline struct x *
+xx(void *v, int idx)
+{
+	struct x *x = (struct x *)v;
+	return &x[idx];
+}
+
+static struct tab tab_x;
 
 static int
 cmp_x_a(const void *p, const void *q)
@@ -304,6 +305,7 @@ static int *tab_x_idxs[2];
 static struct tab tab_x = {
 	.name = "d",
 	.ncols = 2,
+	.colsize = sizeof(struct x),
 	.idxs = tab_x_idxs,
 };
 
