@@ -153,18 +153,16 @@ q_iter(struct tab *tab, ITER_CB_DECL(cb), int dim, struct sel *sels)
 {
 	int min = minord(sels, dim);
 	int max = maxord(sels, dim);
-	struct cur {
-		int *cur;
-	} curs[dim];
+	int *curs[dim];
 	int i, j;
 
-	for (j = 0; j < dim; j++)
-		curs[j].cur = sels[j].ord.vec;
+	for (i = 0; i < dim; i++)
+		curs[i] = sels[i].ord.vec;
 	for (i = min; i <= max; i++) {
 		for (j = 0; j < dim; j++) {
-			while (*curs[j].cur < i)
-				curs[j].cur++;
-			if (*curs[j].cur > i)
+			while (*curs[j] < i)
+				curs[j]++;
+			if (*curs[j] > i)
 				continue;
 		}
 		(*cb)(tab, dim, i, sels);
