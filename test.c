@@ -105,29 +105,23 @@ static struct tab tab_x = {
 int
 main(int c, char *v[])
 {
-	int *idxs[2];
-	struct cond *conds[2];
+	struct cond *conds[2] = {
+		&cond_a,
+		&cond_b,
+	};
 
 	q_open(&tab_x);
 
 	dump();
 
 	printf("cond-a\n");
-	idxs[0] = tab_x.idxs[0];
-	conds[0] = &cond_a;
-	q_query(&tab_x, cb_x, 1, idxs, conds);
+	q_query(&tab_x, cb_x, 1, &tab_x.idxs[0], &conds[0]);
 
 	printf("cond-b\n");
-	idxs[0] = tab_x.idxs[1];
-	conds[0] = &cond_b;
-	q_query(&tab_x, cb_x, 1, idxs, conds);
+	q_query(&tab_x, cb_x, 1, &tab_x.idxs[1], &conds[1]);
 
 	printf("cond-a AND cond-b\n");
-	idxs[0] = tab_x.idxs[0];
-	idxs[1] = tab_x.idxs[1];
-	conds[0] = &cond_a;
-	conds[1] = &cond_b;
-	q_query(&tab_x, cb_x, 2, idxs, conds);
+	q_query(&tab_x, cb_x, 2, &tab_x.idxs[0], &conds[0]);
 
 	q_close(&tab_x);
 
