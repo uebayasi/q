@@ -19,7 +19,7 @@
 
 /******************************************************************************/
 
-int
+static int
 cmp_int(const void *p, const void *q)
 {
 	const int pi = *(const int *)p;
@@ -28,53 +28,48 @@ cmp_int(const void *p, const void *q)
 	return (pi < qi) ? -1 : (pi > qi) ? 1 : 0;
 }
 
-int
-idx_int(void *x, int off)
-{
-	char *cp = (char *)x + off;
-
-	return (*(int *)cp);
-}
-
-int
+static int
 cond_LT(void *v, int off, int p)
 {
 	return (idx_int(v, off) > p);
 }
 
-int
+static int
 cond_GT(void *v, int off, int p)
 {
 	return (idx_int(v, off) < p);
 }
 
-int
+static int
 cond_LE(void *v, int off, int p)
 {
 	return (idx_int(v, off) >= p);
 }
 
-int
+static int
 cond_GE(void *v, int off, int p)
 {
 	return (idx_int(v, off) <= p);
 }
 
-void
+int (*q_selops[])(void *, int, int) = {
+	[Q_SEL_OP_LT] = cond_LT,
+	[Q_SEL_OP_GT] = cond_GT,
+	[Q_SEL_OP_LE] = cond_LE,
+	[Q_SEL_OP_GE] = cond_GE,
+};
+
+static void
 q_sel(struct tab *tab, struct sel *sel)
 {
+	int (*op)(void *, int, int);
+	void *v;
 	int i, j;
 
-	(void)cond_LT;
-	(void)cond_GT;
-	(void)cond_LE;
-	(void)cond_GE;
-
 	for (i = 0; i < sel->idx.len; i++) {
-		void *v;
-
+		op = q_selops[sel->cond->op];
 		v = (char *)tab->data + tab->colsize * sel->idx.vec[i];
-		if ((*sel->cond->cond)(v, sel->cond->off, sel->cond->param))
+		if ((*op)(v, sel->cond->off, sel->cond->param))
 			break;
 	}
 	if (i == sel->idx.len)
@@ -88,7 +83,7 @@ q_sel(struct tab *tab, struct sel *sel)
 	qsort(sel->ord.vec, sel->ord.len, sizeof(int), cmp_int);
 }
 
-void
+static void
 q_sel_done(struct sel *sel)
 {
 	free(sel->ord.vec);
@@ -116,7 +111,7 @@ maxord(struct sel *sels, int dim)
 	return max;
 }
 
-void
+static void
 q_iter(struct tab *tab, ITER_CB_DECL(cb), int dim, struct sel *sels)
 {
 	int min = minord(sels, dim);
@@ -154,7 +149,7 @@ q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, struct cond *conds[])
 		q_sel_done(&sels[i]);
 }
 
-void
+static void
 q_idx(struct tab *tab, int dim)
 {
 	int *v;

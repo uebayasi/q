@@ -6,7 +6,7 @@ struct set {
 };
 
 struct cond {
-	int (*cond)(void *, int, int);
+	int op;
 	int off;
 	int param;
 };
@@ -36,19 +36,24 @@ struct tab {
 
 #define	ITER_CB_DECL(f)	void (*f)(struct tab *, int, int, struct sel *)
 
+static inline int
+idx_int(void *x, int off)
+{
+	char *cp = (char *)x + off;
+
+	return (*(int *)cp);
+}
+
+enum Q_SEL_OP {
+	Q_SEL_OP_LT,
+	Q_SEL_OP_GT,
+	Q_SEL_OP_LE,
+	Q_SEL_OP_GE,
+};
+
 /******************************************************************************/
 
-int cmp_int(const void *, const void *);
-int idx_int(void *, int);
-int cond_LT(void *, int, int);
-int cond_GT(void *, int, int);
-int cond_LE(void *, int, int);
-int cond_GE(void *, int, int);
-void q_sel(struct tab *, struct sel *);
-void q_sel_done(struct sel *);
-void q_iter(struct tab *, ITER_CB_DECL(), int, struct sel *);
 void q_query(struct tab *, ITER_CB_DECL(), int, struct cond *[]);
-void q_idx(struct tab *, int);
 void q_open(struct tab *);
 void q_close(struct tab *);
 
