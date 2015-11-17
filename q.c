@@ -43,39 +43,23 @@ struct x {
 	int b;
 };
 
-static inline struct x *xx(void *v, int i) { return (&(((struct x *)v)[i])); }
+static inline struct x *
+xx(void *v, int idx)
+{
+	struct x *x = (struct x *)v;
+	return &x[idx];
+}
 
 struct tab {
+	const char *name;
 	void *d;
 	int n;
 	int *idx[2];
 };
 
-/******************************************************************************/
-
 static struct tab x_tab;
 
-static int
-cmp_x_a(const void *p, const void *q)
-{
-	const int pi = *(const int *)p;
-	const int qi = *(const int *)q;
-
-	const int pv = xx(x_tab.d, pi)->a;
-	const int qv = xx(x_tab.d, qi)->a;
-	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
-}
-
-static int
-cmp_x_b(const void *p, const void *q)
-{
-	const int pi = *(const int *)p;
-	const int qi = *(const int *)q;
-
-	const int pv = xx(x_tab.d, pi)->b;
-	const int qv = xx(x_tab.d, qi)->b;
-	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
-}
+/******************************************************************************/
 
 static int
 cmp_int(const void *p, const void *q)
@@ -154,23 +138,23 @@ q_sel_done(struct sel *sel)
 #define	ITER_CB_DECL(f)	void (*f)(int, int, struct sel *)
 
 static int
-minord(struct sel *sels, int n)
+minord(struct sel *sels, int dim)
 {
 	int min = sels[0].ord.vec[0];
 	int i;
 
-	for (i = 0; i < n; i++)
+	for (i = 0; i < dim; i++)
 		min = MAX2(min, sels[i].ord.vec[0]);
 	return min;
 }
 
 static int
-maxord(struct sel *sels, int n)
+maxord(struct sel *sels, int dim)
 {
 	int max = sels[0].ord.vec[sels[0].ord.len - 1];
 	int i;
 
-	for (i = 0; i < n; i++)
+	for (i = 0; i < dim; i++)
 		max = MIN2(max, sels[i].ord.vec[sels[i].ord.len - 1]);
 	return max;
 }
@@ -215,6 +199,28 @@ q_query(ITER_CB_DECL(cb), int dim, struct cond *conds[])
 }
 
 /******************************************************************************/
+
+static int
+cmp_x_a(const void *p, const void *q)
+{
+	const int pi = *(const int *)p;
+	const int qi = *(const int *)q;
+
+	const int pv = xx(x_tab.d, pi)->a;
+	const int qv = xx(x_tab.d, qi)->a;
+	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
+}
+
+static int
+cmp_x_b(const void *p, const void *q)
+{
+	const int pi = *(const int *)p;
+	const int qi = *(const int *)q;
+
+	const int pv = xx(x_tab.d, pi)->b;
+	const int qv = xx(x_tab.d, qi)->b;
+	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
+}
 
 static void
 q_idx(int n, int **ridx, int (*cmp)(const void *, const void *))
@@ -292,6 +298,10 @@ iter_cb2(int dim, int idx, struct sel *sels)
 	    idx_int(x, sels[0].cond->off),
 	    idx_int(x, sels[1].cond->off));
 }
+
+static struct tab x_tab = {
+	.name = "d",
+};
 
 int
 main(int c, char *v[])
