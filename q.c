@@ -168,7 +168,7 @@ q_open(struct tab *tab)
 	struct stat st;
 	int i;
 
-	tab->fd = open("d", O_RDONLY);
+	tab->fd = open(tab->name, O_RDONLY);
 	if (tab->fd < 0)
 		exit(1);
 	if (fstat(tab->fd, &st) < 0)
