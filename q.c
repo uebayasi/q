@@ -258,8 +258,6 @@ cmp_x_b(const void *p, const void *q)
 	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
 }
 
-/******************************************************************************/
-
 /* a > 5 */
 struct cond cond_a = {
 	.cond = cond_LT,
