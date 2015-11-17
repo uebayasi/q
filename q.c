@@ -189,15 +189,14 @@ q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, struct cond *conds[])
 static void
 q_idx(struct tab *tab, int dim)
 {
-	int **ridx = &tab->idxs[dim];
-	int (*cmp)(const void *, const void *) = tab->idxcmps[dim];
+	int *v;
 	int i;
 
-	int *idx = malloc(sizeof(int) * tab->nrows);
+	v = malloc(sizeof(int) * tab->nrows);
 	for (i = 0; i < tab->nrows; i++)
-		idx[i] = i;
-	qsort(idx, tab->nrows, sizeof(int), cmp);
-	*ridx = idx;
+		v[i] = i;
+	qsort(v, tab->nrows, sizeof(int), tab->idxcmps[dim]);
+	tab->idxs[dim] = v;
 }
 
 static void
@@ -224,7 +223,7 @@ static void
 q_close(struct tab *tab)
 {
 	(void)munmap(tab->data, tab->colsize * tab->nrows);
-	close(tab->fd);
+	(void)close(tab->fd);
 }
 
 /******************************************************************************/
