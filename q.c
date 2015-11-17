@@ -225,7 +225,7 @@ cmp_x_b(const void *p, const void *q)
 }
 
 static void
-q_idx(int n, int **ridx, int (*cmp)(const void *, const void *))
+q_idx(int n, int (*cmp)(const void *, const void *), int **ridx)
 {
 	int i;
 
@@ -253,7 +253,7 @@ q_open(void)
 	if (tab_x.data == (void *)-1)
 		exit(1);
 	for (i = 0; i < tab_x.ncols; i++)
-		q_idx(tab_x.nrows, &tab_x.idxs[i], tab_x.idxcmps[i]);
+		q_idx(tab_x.nrows, tab_x.idxcmps[i], &tab_x.idxs[i]);
 }
 
 /******************************************************************************/
