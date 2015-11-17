@@ -112,7 +112,6 @@ dump(void)
 /* a > 5 */
 static struct cond cond_a = {
 	.sel = sel_x_a,
-	.op = Q_SEL_OP_LT,
 	.off = offsetof(struct x, a),
 	.param = 5,
 };
@@ -120,7 +119,6 @@ static struct cond cond_a = {
 /* b > 4 */
 struct cond cond_b = {
 	.sel = sel_x_b,
-	.op = Q_SEL_OP_LT,
 	.off = offsetof(struct x, b),
 	.param = 4,
 };

@@ -13,7 +13,6 @@ struct set {
 
 struct cond {
 	void (*sel)(struct cond *, struct tab *, struct sel *);
-	int op;
 	int off;
 	int param;
 };
