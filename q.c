@@ -188,6 +188,40 @@ q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, struct cond *conds[])
 		q_sel_done(&sels[i]);
 }
 
+static void
+q_idx(struct tab *tab, int dim)
+{
+	int **ridx = &tab->idxs[dim];
+	int (*cmp)(const void *, const void *) = tab->idxcmps[dim];
+	int i;
+
+	int *idx = malloc(sizeof(int) * tab->nrows);
+	for (i = 0; i < tab->nrows; i++)
+		idx[i] = i;
+	qsort(idx, tab->nrows, sizeof(int), cmp);
+	*ridx = idx;
+}
+
+static void
+q_open(struct tab *tab)
+{
+	struct stat st;
+	int i;
+
+	int fd = open("d", O_RDONLY);
+	if (fd < 0)
+		exit(1);
+	if (fstat(fd, &st) < 0)
+		exit(1);
+	tab->nrows = st.st_size / tab->colsize;
+	tab->data = mmap(NULL, tab->colsize * tab->nrows, PROT_READ,
+	    MAP_FILE | MAP_SHARED, fd, 0);
+	if (tab->data == (void *)-1)
+		exit(1);
+	for (i = 0; i < tab->ncols; i++)
+		q_idx(tab, i);
+}
+
 /******************************************************************************/
 
 struct x {
@@ -222,40 +256,6 @@ cmp_x_b(const void *p, const void *q)
 	const int pv = xx(tab_x.data, pi)->b;
 	const int qv = xx(tab_x.data, qi)->b;
 	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
-}
-
-static void
-q_idx(struct tab *tab, int dim)
-{
-	int **ridx = &tab->idxs[dim];
-	int (*cmp)(const void *, const void *) = tab->idxcmps[dim];
-	int i;
-
-	int *idx = malloc(sizeof(int) * tab->nrows);
-	for (i = 0; i < tab->nrows; i++)
-		idx[i] = i;
-	qsort(idx, tab->nrows, sizeof(int), cmp);
-	*ridx = idx;
-}
-
-static void
-q_open(struct tab *tab)
-{
-	struct stat st;
-	int i;
-
-	int fd = open("d", O_RDONLY);
-	if (fd < 0)
-		exit(1);
-	if (fstat(fd, &st) < 0)
-		exit(1);
-	tab->nrows = st.st_size / sizeof(struct x);
-	tab->data = mmap(NULL, sizeof(struct x) * tab->nrows, PROT_READ,
-	    MAP_FILE | MAP_SHARED, fd, 0);
-	if (tab->data == (void *)-1)
-		exit(1);
-	for (i = 0; i < tab->ncols; i++)
-		q_idx(tab, i);
 }
 
 /******************************************************************************/
