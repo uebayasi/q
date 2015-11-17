@@ -36,6 +36,14 @@ struct sel {
 	const struct cond *cond;
 };
 
+struct tab {
+	const char *name;
+	void *data;
+	int nrows;
+	int ncols;
+	int **idxs;
+};
+
 /******************************************************************************/
 
 struct x {
@@ -50,15 +58,7 @@ xx(void *v, int idx)
 	return &x[idx];
 }
 
-struct tab {
-	const char *name;
-	void *data;
-	int nrows;
-	int ncols;
-	int *idxs[2];
-};
-
-static struct tab x_tab;
+static struct tab tab_x;
 
 /******************************************************************************/
 
@@ -104,7 +104,7 @@ cond_GE(void *x, int off, int p)
 }
 
 static void
-q_sel(struct sel *sel)
+q_sel(struct tab *tab, struct sel *sel)
 {
 	int i, j;
 
@@ -114,7 +114,7 @@ q_sel(struct sel *sel)
 	(void)cond_GE;
 
 	for (i = 0; i < sel->idx.len; i++) {
-		if ((*sel->cond->cond)(xx(x_tab.data, sel->idx.vec[i]),
+		if ((*sel->cond->cond)(xx(tab->data, sel->idx.vec[i]),
 		    sel->cond->off, sel->cond->param))
 			break;
 	}
@@ -136,7 +136,7 @@ q_sel_done(struct sel *sel)
 		free(sel->ord.vec);
 }
 
-#define	ITER_CB_DECL(f)	void (*f)(int, int, struct sel *)
+#define	ITER_CB_DECL(f)	void (*f)(struct tab *, int, int, struct sel *)
 
 static int
 minord(struct sel *sels, int dim)
@@ -161,7 +161,7 @@ maxord(struct sel *sels, int dim)
 }
 
 static void
-q_iter(ITER_CB_DECL(cb), int dim, struct sel *sels)
+q_iter(struct tab *tab, ITER_CB_DECL(cb), int dim, struct sel *sels)
 {
 	int min = minord(sels, dim);
 	int max = maxord(sels, dim);
@@ -178,23 +178,23 @@ q_iter(ITER_CB_DECL(cb), int dim, struct sel *sels)
 			if (*curs[j].cur > i)
 				continue;
 		}
-		(*cb)(dim, i, sels);
+		(*cb)(tab, dim, i, sels);
 	}
 }
 
 static void
-q_query(ITER_CB_DECL(cb), int dim, struct cond *conds[])
+q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, struct cond *conds[])
 {
 	struct sel sels[dim];
 	int i;
 
 	for (i = 0; i < dim; i++) {
-		sels[i].idx.vec = x_tab.idxs[i];
-		sels[i].idx.len = x_tab.nrows;
+		sels[i].idx.vec = tab->idxs[i];
+		sels[i].idx.len = tab->nrows;
 		sels[i].cond = conds[i];
-		q_sel(&sels[i]);
+		q_sel(tab, &sels[i]);
 	}
-	q_iter(cb, dim, sels);
+	q_iter(tab, cb, dim, sels);
 	for (i = 0; i < dim; i++)
 		q_sel_done(&sels[i]);
 }
@@ -207,8 +207,8 @@ cmp_x_a(const void *p, const void *q)
 	const int pi = *(const int *)p;
 	const int qi = *(const int *)q;
 
-	const int pv = xx(x_tab.data, pi)->a;
-	const int qv = xx(x_tab.data, qi)->a;
+	const int pv = xx(tab_x.data, pi)->a;
+	const int qv = xx(tab_x.data, qi)->a;
 	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
 }
 
@@ -218,8 +218,8 @@ cmp_x_b(const void *p, const void *q)
 	const int pi = *(const int *)p;
 	const int qi = *(const int *)q;
 
-	const int pv = xx(x_tab.data, pi)->b;
-	const int qv = xx(x_tab.data, qi)->b;
+	const int pv = xx(tab_x.data, pi)->b;
+	const int qv = xx(tab_x.data, qi)->b;
 	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
 }
 
@@ -228,10 +228,10 @@ q_idx(int n, int **ridx, int (*cmp)(const void *, const void *))
 {
 	int i;
 
-	int *idx = malloc(sizeof(int) * x_tab.nrows);
-	for (i = 0; i < x_tab.nrows; i++)
+	int *idx = malloc(sizeof(int) * tab_x.nrows);
+	for (i = 0; i < tab_x.nrows; i++)
 		idx[i] = i;
-	qsort(idx, x_tab.nrows, sizeof(int), cmp);
+	qsort(idx, tab_x.nrows, sizeof(int), cmp);
 	*ridx = idx;
 }
 
@@ -248,18 +248,18 @@ q_open(void)
 
 	if (fstat(fd, &st) < 0)
 		exit(1);
-	x_tab.nrows = st.st_size / sizeof(struct x);
-	x_tab.data = mmap(NULL, sizeof(struct x) * x_tab.nrows, PROT_READ, MAP_FILE | MAP_SHARED, fd, 0);
-	if (x_tab.data == (void *)-1)
+	tab_x.nrows = st.st_size / sizeof(struct x);
+	tab_x.data = mmap(NULL, sizeof(struct x) * tab_x.nrows, PROT_READ, MAP_FILE | MAP_SHARED, fd, 0);
+	if (tab_x.data == (void *)-1)
 		exit(1);
 	printf("mmap'ed!\n");
 
-	q_idx(x_tab.nrows, &x_tab.idxs[0], cmp_x_a);
-	q_idx(x_tab.nrows, &x_tab.idxs[1], cmp_x_b);
+	q_idx(tab_x.nrows, &tab_x.idxs[0], cmp_x_a);
+	q_idx(tab_x.nrows, &tab_x.idxs[1], cmp_x_b);
 
-	struct x *x = x_tab.data;
+	struct x *x = tab_x.data;
 	int i;
-	for (i = 0; i < x_tab.nrows; i++) {
+	for (i = 0; i < tab_x.nrows; i++) {
 		printf("%d: (%d, %d)\n", i, x->a, x->b);
 		x++;
 	}
@@ -282,27 +282,29 @@ struct cond cond_b = {
 };
 
 void
-iter_cb1(int dim, int idx, struct sel *sels)
+iter_cb1(struct tab *tab, int dim, int idx, struct sel *sels)
 {
-	struct x *x = xx(x_tab.data, idx);
+	struct x *x = xx(tab_x.data, idx);
 
 	printf("%d: (%d) matches!\n", idx,
 	    idx_int(x, sels[0].cond->off));
 }
 
 void
-iter_cb2(int dim, int idx, struct sel *sels)
+iter_cb2(struct tab *tab, int dim, int idx, struct sel *sels)
 {
-	struct x *x = xx(x_tab.data, idx);
+	struct x *x = xx(tab_x.data, idx);
 
 	printf("%d: (%d, %d) matches!\n", idx,
 	    idx_int(x, sels[0].cond->off),
 	    idx_int(x, sels[1].cond->off));
 }
 
-static struct tab x_tab = {
+static int *tab_x_idxs[2];
+static struct tab tab_x = {
 	.name = "d",
 	.ncols = 2,
+	.idxs = tab_x_idxs,
 };
 
 int
@@ -315,16 +317,16 @@ main(int c, char *v[])
 
 	printf("cond-a\n");
 	conds1[0] = &cond_a;
-	q_query(iter_cb1, 1, conds1);
+	q_query(&tab_x, iter_cb1, 1, conds1);
 
 	printf("cond-b\n");
 	conds1[0] = &cond_b;
-	q_query(iter_cb1, 1, conds1);
+	q_query(&tab_x, iter_cb1, 1, conds1);
 
 	printf("cond-a AND cond-b\n");
 	conds2[0] = &cond_a;
 	conds2[1] = &cond_b;
-	q_query(iter_cb2, 2, conds2);
+	q_query(&tab_x, iter_cb2, 2, conds2);
 
 	return 0;
 }
