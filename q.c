@@ -66,8 +66,8 @@ q_sel(struct tab *tab, struct sel *sel, struct cond *cond)
 	void *v;
 	int i, j;
 
+	op = q_sel_ops[cond->op];
 	for (i = 0; i < sel->idx.len; i++) {
-		op = q_sel_ops[cond->op];
 		v = (char *)tab->data + tab->colsize * sel->idx.vec[i];
 		if ((*op)(v, cond->off, cond->param))
 			break;
@@ -126,10 +126,14 @@ q_iter(struct tab *tab, ITER_CB_DECL(cb), int dim, struct sel *sels,
 		for (j = 0; j < dim; j++) {
 			while (*curs[j] < i)
 				curs[j]++;
+			/* assert(*curs[j] >= i) */
 			if (*curs[j] > i)
 				continue;
+			/* assert(*curs[j] == i) */
 		}
-		(*cb)(tab, dim, i, sels, conds);
+		if (j == dim)
+			/* all matched */
+			(*cb)(tab, dim, i, sels, conds);
 	}
 }
 
