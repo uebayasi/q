@@ -47,6 +47,40 @@ cmp_x_b(const void *p, const void *q)
 }
 
 static void
+sel_x_a(struct cond *cond, struct tab *tab, struct sel *sel)
+{
+	void *v;
+	int i;
+
+	for (i = 0; i < sel->idx.len; i++) {
+		v = (char *)tab->data + tab->colsize * sel->idx.vec[i];
+		if (cond_LT(v, cond->off, cond->param))
+			break;
+	}
+	if (i == sel->idx.len)
+		exit(1);
+	sel->set.p = i;
+	sel->set.q = sel->idx.len - 1;
+}
+
+static void
+sel_x_b(struct cond *cond, struct tab *tab, struct sel *sel)
+{
+	void *v;
+	int i;
+
+	for (i = 0; i < sel->idx.len; i++) {
+		v = (char *)tab->data + tab->colsize * sel->idx.vec[i];
+		if (cond_LT(v, cond->off, cond->param))
+			break;
+	}
+	if (i == sel->idx.len)
+		exit(1);
+	sel->set.p = i;
+	sel->set.q = sel->idx.len - 1;
+}
+
+static void
 cb_x(struct tab *tab, int dim, int idx, struct sel *sels, struct cond *conds[])
 {
 	struct x *x = xx(tab_x.data, idx);
@@ -77,6 +111,7 @@ dump(void)
 
 /* a > 5 */
 static struct cond cond_a = {
+	.sel = sel_x_a,
 	.op = Q_SEL_OP_LT,
 	.off = offsetof(struct x, a),
 	.param = 5,
@@ -84,6 +119,7 @@ static struct cond cond_a = {
 
 /* b > 4 */
 struct cond cond_b = {
+	.sel = sel_x_b,
 	.op = Q_SEL_OP_LT,
 	.off = offsetof(struct x, b),
 	.param = 4,

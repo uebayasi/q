@@ -1,11 +1,18 @@
 /******************************************************************************/
 
+struct set;
+struct cond;
+struct vec;
+struct sel;
+struct tab;
+
 struct set {
 	int p;
 	int q;
 };
 
 struct cond {
+	void (*sel)(struct cond *, struct tab *, struct sel *);
 	int op;
 	int off;
 	int param;
@@ -57,6 +64,30 @@ idx_int(void *x, int off)
 	char *cp = (char *)x + off;
 
 	return (*(int *)cp);
+}
+
+static inline int
+cond_LT(void *v, int off, int p)
+{
+	return (idx_int(v, off) > p);
+}
+
+static inline int
+cond_GT(void *v, int off, int p)
+{
+	return (idx_int(v, off) < p);
+}
+
+static inline int
+cond_LE(void *v, int off, int p)
+{
+	return (idx_int(v, off) >= p);
+}
+
+static inline int
+cond_GE(void *v, int off, int p)
+{
+	return (idx_int(v, off) <= p);
 }
 
 /******************************************************************************/

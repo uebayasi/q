@@ -28,54 +28,12 @@ cmp_int(const void *p, const void *q)
 	return (pi < qi) ? -1 : (pi > qi) ? 1 : 0;
 }
 
-static int
-cond_LT(void *v, int off, int p)
-{
-	return (idx_int(v, off) > p);
-}
-
-static int
-cond_GT(void *v, int off, int p)
-{
-	return (idx_int(v, off) < p);
-}
-
-static int
-cond_LE(void *v, int off, int p)
-{
-	return (idx_int(v, off) >= p);
-}
-
-static int
-cond_GE(void *v, int off, int p)
-{
-	return (idx_int(v, off) <= p);
-}
-
-static int (*q_sel_ops[])(void *, int, int) = {
-	[Q_SEL_OP_LT] = cond_LT,
-	[Q_SEL_OP_GT] = cond_GT,
-	[Q_SEL_OP_LE] = cond_LE,
-	[Q_SEL_OP_GE] = cond_GE,
-};
-
 static void
 q_sel(struct tab *tab, struct sel *sel, struct cond *cond)
 {
-	int (*op)(void *, int, int);
-	void *v;
 	int i, j;
 
-	op = q_sel_ops[cond->op];
-	for (i = 0; i < sel->idx.len; i++) {
-		v = (char *)tab->data + tab->colsize * sel->idx.vec[i];
-		if ((*op)(v, cond->off, cond->param))
-			break;
-	}
-	if (i == sel->idx.len)
-		exit(1);
-	sel->set.p = i;
-	sel->set.q = sel->idx.len - 1;
+	(*cond->sel)(cond, tab, sel);
 	sel->ord.len = (sel->set.q - sel->set.p + 1);
 	sel->ord.vec = malloc(sizeof(int) * sel->ord.len);
 	for (i = sel->set.p, j = 0; i <= sel->set.q; i++, j++)
