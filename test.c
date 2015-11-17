@@ -63,7 +63,7 @@ cb_x(struct tab *tab, int dim, int idx, struct sel *sels, struct cond *conds[])
 	printf(") matches!\n");
 }
 
-void
+static void
 dump(void)
 {
 	struct x *x = tab_x.data;
@@ -76,7 +76,7 @@ dump(void)
 }
 
 /* a > 5 */
-struct cond cond_a = {
+static struct cond cond_a = {
 	.op = Q_SEL_OP_LT,
 	.off = offsetof(struct x, a),
 	.param = 5,
