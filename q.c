@@ -245,25 +245,17 @@ q_open(void)
 	int fd = open("d", O_RDONLY);
 	if (fd < 0)
 		exit(1);
-	printf("open'ed!\n");
 
 	if (fstat(fd, &st) < 0)
 		exit(1);
 	tab_x.nrows = st.st_size / sizeof(struct x);
-	tab_x.data = mmap(NULL, sizeof(struct x) * tab_x.nrows, PROT_READ, MAP_FILE | MAP_SHARED, fd, 0);
+	tab_x.data = mmap(NULL, sizeof(struct x) * tab_x.nrows, PROT_READ,
+	    MAP_FILE | MAP_SHARED, fd, 0);
 	if (tab_x.data == (void *)-1)
 		exit(1);
-	printf("mmap'ed!\n");
 
 	q_idx(tab_x.nrows, &tab_x.idxs[0], cmp_x_a);
 	q_idx(tab_x.nrows, &tab_x.idxs[1], cmp_x_b);
-
-	struct x *x = tab_x.data;
-	int i;
-	for (i = 0; i < tab_x.nrows; i++) {
-		printf("%d: (%d, %d)\n", i, x->a, x->b);
-		x++;
-	}
 }
 
 /******************************************************************************/
@@ -309,6 +301,18 @@ static struct tab tab_x = {
 	.idxs = tab_x_idxs,
 };
 
+void
+dump(void)
+{
+	struct x *x = tab_x.data;
+	int i;
+
+	for (i = 0; i < tab_x.nrows; i++) {
+		printf("%d: (%d, %d)\n", i, x->a, x->b);
+		x++;
+	}
+}
+
 int
 main(int c, char *v[])
 {
@@ -316,6 +320,8 @@ main(int c, char *v[])
 	struct cond *conds2[2];
 
 	q_open();
+
+	dump();
 
 	printf("cond-a\n");
 	conds1[0] = &cond_a;
