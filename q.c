@@ -60,16 +60,16 @@ int (*q_selops[])(void *, int, int) = {
 };
 
 static void
-q_sel(struct tab *tab, struct sel *sel)
+q_sel(struct tab *tab, struct sel *sel, struct cond *cond)
 {
 	int (*op)(void *, int, int);
 	void *v;
 	int i, j;
 
 	for (i = 0; i < sel->idx.len; i++) {
-		op = q_selops[sel->cond->op];
+		op = q_selops[cond->op];
 		v = (char *)tab->data + tab->colsize * sel->idx.vec[i];
-		if ((*op)(v, sel->cond->off, sel->cond->param))
+		if ((*op)(v, cond->off, cond->param))
 			break;
 	}
 	if (i == sel->idx.len)
@@ -112,7 +112,8 @@ maxord(struct sel *sels, int dim)
 }
 
 static void
-q_iter(struct tab *tab, ITER_CB_DECL(cb), int dim, struct sel *sels)
+q_iter(struct tab *tab, ITER_CB_DECL(cb), int dim, struct sel *sels,
+    struct cond *conds[])
 {
 	int min = minord(sels, dim);
 	int max = maxord(sels, dim);
@@ -128,7 +129,7 @@ q_iter(struct tab *tab, ITER_CB_DECL(cb), int dim, struct sel *sels)
 			if (*curs[j] > i)
 				continue;
 		}
-		(*cb)(tab, dim, i, sels);
+		(*cb)(tab, dim, i, sels, conds);
 	}
 }
 
@@ -141,10 +142,9 @@ q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, struct cond *conds[])
 	for (i = 0; i < dim; i++) {
 		sels[i].idx.vec = tab->idxs[i];
 		sels[i].idx.len = tab->nrows;
-		sels[i].cond = conds[i];
-		q_sel(tab, &sels[i]);
+		q_sel(tab, &sels[i], conds[i]);
 	}
-	q_iter(tab, cb, dim, sels);
+	q_iter(tab, cb, dim, sels, conds);
 	for (i = 0; i < dim; i++)
 		q_sel_done(&sels[i]);
 }

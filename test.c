@@ -47,7 +47,7 @@ cmp_x_b(const void *p, const void *q)
 }
 
 static void
-cb_x(struct tab *tab, int dim, int idx, struct sel *sels)
+cb_x(struct tab *tab, int dim, int idx, struct sel *sels, struct cond *conds[])
 {
 	struct x *x = xx(tab_x.data, idx);
 	int first = 1;
@@ -57,7 +57,7 @@ cb_x(struct tab *tab, int dim, int idx, struct sel *sels)
 	for (i = 0; i < dim; i++) {
 		printf("%s%d",
 		    first ? "" : ", ",
-		    idx_int(x, sels[i].cond->off));
+		    idx_int(x, conds[i]->off));
 		first = 0;
 	}
 	printf(") matches!\n");

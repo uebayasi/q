@@ -20,7 +20,6 @@ struct sel {
 	struct vec idx;
 	struct vec ord;
 	struct set set;
-	const struct cond *cond;
 };
 
 struct tab {
@@ -36,7 +35,8 @@ struct tab {
 
 /******************************************************************************/
 
-#define	ITER_CB_DECL(f)	void (*f)(struct tab *, int, int, struct sel *)
+#define	ITER_CB_DECL(f)	\
+	void (*f)(struct tab *, int, int, struct sel *, struct cond *[])
 
 void q_query(struct tab *, ITER_CB_DECL(), int, struct cond *[]);
 void q_open(struct tab *);
