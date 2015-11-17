@@ -52,7 +52,7 @@ cond_GE(void *v, int off, int p)
 	return (idx_int(v, off) <= p);
 }
 
-static int (*q_selops[])(void *, int, int) = {
+static int (*q_sel_ops[])(void *, int, int) = {
 	[Q_SEL_OP_LT] = cond_LT,
 	[Q_SEL_OP_GT] = cond_GT,
 	[Q_SEL_OP_LE] = cond_LE,
@@ -67,7 +67,7 @@ q_sel(struct tab *tab, struct sel *sel, struct cond *cond)
 	int i, j;
 
 	for (i = 0; i < sel->idx.len; i++) {
-		op = q_selops[cond->op];
+		op = q_sel_ops[cond->op];
 		v = (char *)tab->data + tab->colsize * sel->idx.vec[i];
 		if ((*op)(v, cond->off, cond->param))
 			break;
