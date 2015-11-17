@@ -273,7 +273,7 @@ struct cond cond_b = {
 };
 
 void
-iter_cb(struct tab *tab, int dim, int idx, struct sel *sels)
+cb_x(struct tab *tab, int dim, int idx, struct sel *sels)
 {
 	struct x *x = xx(tab_x.data, idx);
 	int first = 1;
@@ -326,16 +326,16 @@ main(int c, char *v[])
 
 	printf("cond-a\n");
 	conds1[0] = &cond_a;
-	q_query(&tab_x, iter_cb, 1, conds1);
+	q_query(&tab_x, cb_x, 1, conds1);
 
 	printf("cond-b\n");
 	conds1[0] = &cond_b;
-	q_query(&tab_x, iter_cb, 1, conds1);
+	q_query(&tab_x, cb_x, 1, conds1);
 
 	printf("cond-a AND cond-b\n");
 	conds2[0] = &cond_a;
 	conds2[1] = &cond_b;
-	q_query(&tab_x, iter_cb, 2, conds2);
+	q_query(&tab_x, cb_x, 2, conds2);
 
 	return 0;
 }
