@@ -52,7 +52,7 @@ cond_GE(void *v, int off, int p)
 	return (idx_int(v, off) <= p);
 }
 
-int (*q_selops[])(void *, int, int) = {
+static int (*q_selops[])(void *, int, int) = {
 	[Q_SEL_OP_LT] = cond_LT,
 	[Q_SEL_OP_GT] = cond_GT,
 	[Q_SEL_OP_LE] = cond_LE,
@@ -133,8 +133,24 @@ q_iter(struct tab *tab, ITER_CB_DECL(cb), int dim, struct sel *sels,
 	}
 }
 
+static void
+q_idx(struct tab *tab, int dim)
+{
+	int *v;
+	int i;
+
+	v = malloc(sizeof(int) * tab->nrows);
+	for (i = 0; i < tab->nrows; i++)
+		v[i] = i;
+	qsort(v, tab->nrows, sizeof(int), tab->idxcmps[dim]);
+	tab->idxs[dim] = v;
+}
+
+/******************************************************************************/
+
 void
-q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, int *idxs[], struct cond *conds[])
+q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, int *idxs[],
+    struct cond *conds[])
 {
 	struct sel sels[dim];
 	int i;
@@ -147,19 +163,6 @@ q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, int *idxs[], struct cond *co
 	q_iter(tab, cb, dim, sels, conds);
 	for (i = 0; i < dim; i++)
 		q_sel_done(&sels[i]);
-}
-
-static void
-q_idx(struct tab *tab, int dim)
-{
-	int *v;
-	int i;
-
-	v = malloc(sizeof(int) * tab->nrows);
-	for (i = 0; i < tab->nrows; i++)
-		v[i] = i;
-	qsort(v, tab->nrows, sizeof(int), tab->idxcmps[dim]);
-	tab->idxs[dim] = v;
 }
 
 void
