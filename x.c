@@ -31,6 +31,8 @@ cmp_x_b(const void *p, const void *q)
 	return (pv < qv) ? -1 : (pv > qv) ? 1 : 0;
 }
 
+/******************************************************************************/
+
 static void
 sel_x_a(struct cond *cond, struct tab *tab, struct sel *sel)
 {
@@ -78,6 +80,8 @@ q_dump(void)
 	}
 }
 #endif
+
+/******************************************************************************/
 
 static void
 cb_x_a(struct tab *tab, int dim, int idx, struct sel *sels, struct cond *conds[])
@@ -130,6 +134,8 @@ cb_x_a_b(struct tab *tab, int dim, int idx, struct sel *sels, struct cond *conds
 	printf(") matches!\n");
 }
 
+/******************************************************************************/
+
 /* a > 5 */
 static struct cond cond_x_a = {
 	.sel = sel_x_a,
@@ -145,6 +151,8 @@ static struct cond cond_x_b = {
 	.off = offsetof(struct x, b),
 	.param = 4,
 };
+
+/******************************************************************************/
 
 static int (*tab_x_idxcmps[2])(const void *, const void *) = {
 	cmp_x_a,
