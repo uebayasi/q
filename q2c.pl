@@ -88,7 +88,7 @@ sub print_tab_col {
 	printf "\t%s %s%s;\n", $type, $name, $array;
 }
 
-sub print_q_col {
+sub print_qry_col {
 	# XXX
 }
 
@@ -106,7 +106,7 @@ sub print_qry {
 	my ($qry) = @_;
 	printf "struct %s {\n", $qry->{name};
 	foreach my $col (@{$qry->{cols}}) {
-		print_q_col($col);
+		print_qry_col($col);
 	}
 	printf "};\n";
 }
