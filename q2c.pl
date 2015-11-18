@@ -1,5 +1,14 @@
+use strict;
+
 my ($tab, $tabs);
 my ($q, $qs);
+my ($pad);
+my $type2c = {
+	"I" => "int\%d_t ",
+	"U" => "uint\%d_t ",
+	"PTR" => "void *",
+};
+
 sub parse_table {
 	my ($name) = @_;
 	if (defined($tab)) {
@@ -8,6 +17,7 @@ sub parse_table {
 	}
 	$tab->{name} = $name;
 }
+
 sub parse_column {
 	my ($type, $name) = ($1, $2);
 	my ($size, $array);
@@ -32,6 +42,7 @@ sub parse_column {
 		"array" => $array,
 	};
 }
+
 sub parse_query {
 	my ($name) = @_;
 	if (defined($q)) {
@@ -40,31 +51,21 @@ sub parse_query {
 	}
 	$q->{name} = $name;
 }
-while (my $line = <>) {
-	if ($line =~ m/^TABLE\s+(.*?)$/) {
-		parse_table($1);
-	}
-	if ($line =~ m/^COLUMN\s+(.*?)\s+(.*?)$/) {
-		parse_column($1, $2);
-	}
-	if ($line =~ m/^QUERY\s+(.*?)$/) {
-		parse_query($1);
+
+sub parse {
+	while (my $line = <>) {
+		if ($line =~ m/^TABLE\s+(.*?)$/) {
+			parse_table($1);
+		}
+		if ($line =~ m/^COLUMN\s+(.*?)\s+(.*?)$/) {
+			parse_column($1, $2);
+		}
+		if ($line =~ m/^QUERY\s+(.*?)$/) {
+			parse_query($1);
+		}
 	}
 }
-if (defined($tab)) {
-	push @{$tabs}, $tab;
-	undef $tab;
-}
-if (defined($q)) {
-	push @{$qs}, $q;
-	undef $q;
-}
-# XXX do checks
-my $type2c = {
-	"I" => "int\%d_t ",
-	"U" => "uint\d_t ",
-	"PTR" => "void *",
-};
+
 sub print_tab_col {
 	my ($col) = @_;
 	my ($type, $name);
@@ -83,23 +84,40 @@ sub print_tab_col {
 	}
 	printf "\t%s%s;\n", $type, $name;
 }
+
 sub print_tab {
 	my ($tab) = @_;
-	my $pad = 1;
+	$pad = 1;
 	printf "struct %s {\n", $tab->{name};
 	foreach my $col (@{$tab->{cols}}) {
 		print_tab_col($col);
 	}
 	printf "};\n";
 }
+
 sub print_query {
 	my ($q) = @_;
 	printf "struct %s {\n", $q->{name};
 	printf "};\n";
 }
-foreach my $tab (@{$tabs}) {
-	print_tab($tab);
+
+sub main {
+	parse();
+	if (defined($tab)) {
+		push @{$tabs}, $tab;
+		undef $tab;
+	}
+	if (defined($q)) {
+		push @{$qs}, $q;
+		undef $q;
+	}
+	# XXX do checks
+	foreach my $tab (@{$tabs}) {
+		print_tab($tab);
+	}
+	foreach my $q (@{$qs}) {
+		print_tab($q);
+	}
 }
-foreach my $q (@{$qs}) {
-	print_tab($q);
-}
+
+main();
