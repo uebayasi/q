@@ -1,12 +1,13 @@
+#! /usr/bin/env perl
+
 use strict;
 
 my ($tab, $tabs);
 my ($q, $qs);
 my ($pad);
 my $type2c = {
-	"I" => "int\%d_t ",
-	"U" => "uint\%d_t ",
-	"PTR" => "void *",
+	"I" => "int\%d_t",
+	"U" => "uint\%d_t",
 };
 
 sub parse_table {
@@ -82,7 +83,7 @@ sub print_tab_col {
 	if (not $name) {
 		$name = sprintf "__pad%d", $pad++;
 	}
-	printf "\t%s%s;\n", $type, $name;
+	printf "\t%s %s;\n", $type, $name;
 }
 
 sub print_q_col {
