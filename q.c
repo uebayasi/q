@@ -105,6 +105,12 @@ q_idx(struct tab *tab, int dim)
 	tab->idxs[dim] = v;
 }
 
+static void
+q_idx_done(struct tab *tab, int dim)
+{
+	free(tab->idxs[dim]);
+}
+
 /******************************************************************************/
 
 void
@@ -148,6 +154,10 @@ q_open(struct tab *tab)
 void
 q_close(struct tab *tab)
 {
+	int i;
+
+	for (i = 0; i < tab->ncols; i++)
+		q_idx_done(tab, i);
 	(void)munmap(tab->data, tab->colsize * tab->nrows);
 	(void)close(tab->fd);
 }
