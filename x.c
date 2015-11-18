@@ -142,7 +142,7 @@ close_x(void)
 }
 
 void
-query_x_a(ITER_CB_DECL(cb))
+query_x_a(QUERY_X_CB_DECL(cb))
 {
 	struct cond *conds[1] = {
 		&cond_x_a,
@@ -153,7 +153,7 @@ query_x_a(ITER_CB_DECL(cb))
 }
 
 void
-query_x_b(ITER_CB_DECL(cb))
+query_x_b(QUERY_X_CB_DECL(cb))
 {
 	struct cond *conds[1] = {
 		&cond_x_b,
@@ -164,7 +164,7 @@ query_x_b(ITER_CB_DECL(cb))
 }
 
 void
-query_x_a_b(ITER_CB_DECL(cb))
+query_x_a_b(QUERY_X_CB_DECL(cb))
 {
 	struct cond *conds[2] = {
 		&cond_x_a,

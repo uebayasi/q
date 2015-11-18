@@ -14,11 +14,13 @@ xx(void *v, int idx)
 
 /******************************************************************************/
 
+#define	QUERY_X_CB_DECL(cb) void (*cb)(struct x *)
+
 void open_x(void);
 void close_x(void);
-void query_x_a(ITER_CB_DECL());
-void query_x_b(ITER_CB_DECL());
-void query_x_a_b(ITER_CB_DECL());
+void query_x_a(QUERY_X_CB_DECL());
+void query_x_b(QUERY_X_CB_DECL());
+void query_x_a_b(QUERY_X_CB_DECL());
 
 /******************************************************************************/
 
