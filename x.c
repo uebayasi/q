@@ -83,6 +83,23 @@ q_dump(void)
 }
 #endif
 
+static void
+cb_x(struct tab *tab, int dim, int idx, struct sel *sels, struct cond *conds[])
+{
+	struct x *x = xx(tab_x.data, idx);
+	int first = 1;
+	int i;
+
+	printf("%d: (", idx);
+	for (i = 0; i < dim; i++) {
+		printf("%s%d",
+		    first ? "" : ", ",
+		    idx_int(x, conds[i]->off));
+		first = 0;
+	}
+	printf(") matches!\n");
+}
+
 /* a > 5 */
 static struct cond cond_x_a = {
 	.sel = sel_x_a,
@@ -132,7 +149,7 @@ query_x_a(ITER_CB_DECL(cb))
 	};
 
 	printf("cond-a\n");
-	q_query(&tab_x, cb, 1, &tab_x.idxs[0], &conds[0]);
+	q_query(&tab_x, cb_x, 1, &tab_x.idxs[0], &conds[0]);
 }
 
 void
@@ -143,7 +160,7 @@ query_x_b(ITER_CB_DECL(cb))
 	};
 
 	printf("cond-a\n");
-	q_query(&tab_x, cb, 1, &tab_x.idxs[1], &conds[0]);
+	q_query(&tab_x, cb_x, 1, &tab_x.idxs[1], &conds[0]);
 }
 
 void
@@ -155,7 +172,7 @@ query_x_a_b(ITER_CB_DECL(cb))
 	};
 
 	printf("cond-a AND cond-b\n");
-	q_query(&tab_x, cb, 2, &tab_x.idxs[0], &conds[0]);
+	q_query(&tab_x, cb_x, 2, &tab_x.idxs[0], &conds[0]);
 }
 
 /******************************************************************************/
