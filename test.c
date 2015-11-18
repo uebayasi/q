@@ -80,25 +80,9 @@ sel_x_b(struct cond *cond, struct tab *tab, struct sel *sel)
 	sel->set.q = sel->idx.len - 1;
 }
 
+#if 0
 static void
-cb_x(struct tab *tab, int dim, int idx, struct sel *sels, struct cond *conds[])
-{
-	struct x *x = xx(tab_x.data, idx);
-	int first = 1;
-	int i;
-
-	printf("%d: (", idx);
-	for (i = 0; i < dim; i++) {
-		printf("%s%d",
-		    first ? "" : ", ",
-		    idx_int(x, conds[i]->off));
-		first = 0;
-	}
-	printf(") matches!\n");
-}
-
-static void
-dump(void)
+q_dump(void)
 {
 	struct x *x = tab_x.data;
 	int i;
@@ -108,16 +92,17 @@ dump(void)
 		x++;
 	}
 }
+#endif
 
 /* a > 5 */
-static struct cond cond_a = {
+static struct cond cond_x_a = {
 	.sel = sel_x_a,
 	.off = offsetof(struct x, a),
 	.param = 5,
 };
 
 /* b > 4 */
-struct cond cond_b = {
+struct cond cond_x_b = {
 	.sel = sel_x_b,
 	.off = offsetof(struct x, b),
 	.param = 4,
@@ -136,28 +121,79 @@ static struct tab tab_x = {
 	.idxs = tab_x_idxs,
 };
 
+static void
+query_x_a(ITER_CB_DECL(cb))
+{
+	struct cond *conds[1] = {
+		&cond_x_a,
+	};
+
+	printf("cond-a\n");
+	q_query(&tab_x, cb, 1, &tab_x.idxs[0], &conds[0]);
+}
+
+static void
+open_x(void)
+{
+	q_open(&tab_x);
+}
+
+static void
+close_x(void)
+{
+	q_close(&tab_x);
+}
+
+static void
+query_x_b(ITER_CB_DECL(cb))
+{
+	struct cond *conds[1] = {
+		&cond_x_b,
+	};
+
+	printf("cond-a\n");
+	q_query(&tab_x, cb, 1, &tab_x.idxs[1], &conds[0]);
+}
+
+static void
+query_x_a_b(ITER_CB_DECL(cb))
+{
+	struct cond *conds[2] = {
+		&cond_x_a,
+		&cond_x_b,
+	};
+
+	printf("cond-a AND cond-b\n");
+	q_query(&tab_x, cb, 2, &tab_x.idxs[0], &conds[0]);
+}
+
+static void
+cb_x(struct tab *tab, int dim, int idx, struct sel *sels, struct cond *conds[])
+{
+	struct x *x = xx(tab_x.data, idx);
+	int first = 1;
+	int i;
+
+	printf("%d: (", idx);
+	for (i = 0; i < dim; i++) {
+		printf("%s%d",
+		    first ? "" : ", ",
+		    idx_int(x, conds[i]->off));
+		first = 0;
+	}
+	printf(") matches!\n");
+}
+
 int
 main(int c, char *v[])
 {
-	struct cond *conds[2] = {
-		&cond_a,
-		&cond_b,
-	};
+	open_x();
 
-	q_open(&tab_x);
+	query_x_a(cb_x);
+	query_x_b(cb_x);
+	query_x_a_b(cb_x);
 
-	dump();
-
-	printf("cond-a\n");
-	q_query(&tab_x, cb_x, 1, &tab_x.idxs[0], &conds[0]);
-
-	printf("cond-b\n");
-	q_query(&tab_x, cb_x, 1, &tab_x.idxs[1], &conds[1]);
-
-	printf("cond-a AND cond-b\n");
-	q_query(&tab_x, cb_x, 2, &tab_x.idxs[0], &conds[0]);
-
-	q_close(&tab_x);
+	close_x();
 
 	return 0;
 }
