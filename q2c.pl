@@ -3,7 +3,7 @@
 use strict;
 
 my ($tab, $tabs);
-my ($q, $qs);
+my ($query, $queries);
 my ($pad);
 my $type2c = {
 	"I" => "int\%d_t",
@@ -46,11 +46,11 @@ sub parse_column {
 
 sub parse_query {
 	my ($name) = @_;
-	if (defined($q)) {
-		push @{$qs}, $q;
-		undef $q;
+	if (defined($query)) {
+		push @{$queries}, $query;
+		undef $query;
 	}
-	$q->{name} = $name;
+	$query->{name} = $name;
 }
 
 sub parse {
@@ -103,9 +103,9 @@ sub print_tab {
 }
 
 sub print_query {
-	my ($q) = @_;
-	printf "struct %s {\n", $q->{name};
-	foreach my $col (@{$q->{cols}}) {
+	my ($query) = @_;
+	printf "struct %s {\n", $query->{name};
+	foreach my $col (@{$query->{cols}}) {
 		print_q_col($col);
 	}
 	printf "};\n";
@@ -117,15 +117,15 @@ sub main {
 		push @{$tabs}, $tab;
 		undef $tab;
 	}
-	if (defined($q)) {
-		push @{$qs}, $q;
-		undef $q;
+	if (defined($query)) {
+		push @{$queries}, $query;
+		undef $query;
 	}
 	# XXX do checks
 	foreach (@{$tabs}) {
 		print_tab($_);
 	}
-	foreach (@{$qs}) {
+	foreach (@{$queries}) {
 		print_query($_);
 	}
 }
