@@ -1,51 +1,54 @@
 my ($tab, $tabs);
 my ($q, $qs);
 sub parse_table {
+	my ($name) = @_;
+	if (defined($tab)) {
+		push @{$tabs}, $tab;
+		undef $tab;
+	}
+	$tab->{name} = $name;
 }
 sub parse_column {
+	my ($type, $name) = ($1, $2);
+	my ($size, $array);
+	print STDERR "type: ", $type, "\n";
+	print STDERR "name: ", $name, "\n";
+	if ($type =~ m/^(.*?)\((\d+?)\)$/) {
+		$type = $1;
+		$array = $2;
+	} else {
+		undef $array;
+	}
+	if ($type =~ m/^(.*?)(\d+?)$/) {
+		$type = $1;
+		$size = $2;
+	} else {
+		undef $size;
+	}
+	push @{$tab->{cols}}, {
+		"type" => $type,
+		"size" => $size,
+		"name" => $name,
+		"array" => $array,
+	};
 }
 sub parse_query {
-}
-sub parse {
+	my ($name) = @_;
+	if (defined($q)) {
+		push @{$qs}, $q;
+		undef $q;
+	}
+	$q->{name} = $name;
 }
 while (my $line = <>) {
 	if ($line =~ m/^TABLE\s+(.*?)$/) {
-		if (defined($tab)) {
-			push @{$tabs}, $tab;
-			undef $tab;
-		}
-		$tab->{name} = $1;
+		parse_table($1);
 	}
 	if ($line =~ m/^COLUMN\s+(.*?)\s+(.*?)$/) {
-		my ($type, $name) = ($1, $2);
-		my ($size, $array);
-		print STDERR "type: ", $type, "\n";
-		print STDERR "name: ", $name, "\n";
-		if ($type =~ m/^(.*?)\((\d+?)\)$/) {
-			$type = $1;
-			$array = $2;
-		} else {
-			undef $array;
-		}
-		if ($type =~ m/^(.*?)(\d+?)$/) {
-			$type = $1;
-			$size = $2;
-		} else {
-			undef $size;
-		}
-		push @{$tab->{cols}}, {
-			"type" => $type,
-			"size" => $size,
-			"name" => $name,
-			"array" => $array,
-		};
+		parse_column($1, $2);
 	}
 	if ($line =~ m/^QUERY\s+(.*?)$/) {
-		if (defined($q)) {
-			push @{$qs}, $q;
-			undef $q;
-		}
-		$q->{name} = $1;
+		parse_query($1);
 	}
 }
 if (defined($tab)) {
