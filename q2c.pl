@@ -1,7 +1,19 @@
-my ($tab);
-my ($line);
-while ($line = <>) {
+my ($tab, $tabs);
+my ($q, $qs);
+sub parse_table {
+}
+sub parse_column {
+}
+sub parse_query {
+}
+sub parse {
+}
+while (my $line = <>) {
 	if ($line =~ m/^TABLE\s+(.*?)$/) {
+		if (defined($tab)) {
+			push @{$tabs}, $tab;
+			undef $tab;
+		}
 		$tab->{name} = $1;
 	}
 	if ($line =~ m/^COLUMN\s+(.*?)\s+(.*?)$/) {
@@ -28,6 +40,21 @@ while ($line = <>) {
 			"array" => $array,
 		};
 	}
+	if ($line =~ m/^QUERY\s+(.*?)$/) {
+		if (defined($q)) {
+			push @{$qs}, $q;
+			undef $q;
+		}
+		$q->{name} = $1;
+	}
+}
+if (defined($tab)) {
+	push @{$tabs}, $tab;
+	undef $tab;
+}
+if (defined($q)) {
+	push @{$qs}, $q;
+	undef $q;
 }
 # XXX do checks
 my $type2c = {
@@ -35,9 +62,8 @@ my $type2c = {
 	"U" => "uint\d_t ",
 	"PTR" => "void *",
 };
-printf "struct %s {\n", $tab->{name};
-my $pad = 1;
-foreach my $col (@{$tab->{cols}}) {
+sub print_tab_col {
+	my ($col) = @_;
 	my ($type, $name);
 	if ($col->{size}) {
 		$type = sprintf $type2c->{$col->{type}}, $col->{size};
@@ -54,4 +80,23 @@ foreach my $col (@{$tab->{cols}}) {
 	}
 	printf "\t%s%s;\n", $type, $name;
 }
-printf "};\n";
+sub print_tab {
+	my ($tab) = @_;
+	my $pad = 1;
+	printf "struct %s {\n", $tab->{name};
+	foreach my $col (@{$tab->{cols}}) {
+		print_tab_col($col);
+	}
+	printf "};\n";
+}
+sub print_query {
+	my ($q) = @_;
+	printf "struct %s {\n", $q->{name};
+	printf "};\n";
+}
+foreach my $tab (@{$tabs}) {
+	print_tab($tab);
+}
+foreach my $q (@{$qs}) {
+	print_tab($q);
+}
