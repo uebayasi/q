@@ -69,21 +69,23 @@ sub parse {
 
 sub print_tab_col {
 	my ($col) = @_;
-	my ($type, $name);
+	my ($type, $name, $array);
 	if ($col->{size}) {
 		$type = sprintf $type2c->{$col->{type}}, $col->{size};
 	} else {
 		$type = $type2c->{$col->{type}};
 	}
 	if ($col->{array}) {
-		$name = sprintf "%s[%s]", $col->{name}, $col->{array};
+		$array = sprintf "[%s]", $col->{array};
 	} else {
-		$name = sprintf "%s", $col->{name};
+		$array = "";
 	}
-	if (not $name) {
+	if ($col->{name}) {
+		$name = $col->{name};
+	} else {
 		$name = sprintf "__pad%d", $pad++;
 	}
-	printf "\t%s %s;\n", $type, $name;
+	printf "\t%s %s%s;\n", $type, $name, $array;
 }
 
 sub print_q_col {
