@@ -13,6 +13,7 @@ struct set {
 
 struct cond {
 	void (*sel)(struct cond *, struct tab *, struct sel *);
+	int colidx;
 	int off;
 	int param;
 };
@@ -44,7 +45,7 @@ struct tab {
 #define	ITER_CB_DECL(f)	\
 	void (*f)(struct tab *, int, int, struct sel *, struct cond *[])
 
-void q_query(struct tab *, ITER_CB_DECL(), int, int *[], struct cond *[]);
+void q_query(struct tab *, ITER_CB_DECL(), int, struct cond *[]);
 void q_open(struct tab *);
 void q_close(struct tab *);
 

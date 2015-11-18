@@ -133,6 +133,7 @@ cb_x_a_b(struct tab *tab, int dim, int idx, struct sel *sels, struct cond *conds
 /* a > 5 */
 static struct cond cond_x_a = {
 	.sel = sel_x_a,
+	.colidx = 0,
 	.off = offsetof(struct x, a),
 	.param = 5,
 };
@@ -140,6 +141,7 @@ static struct cond cond_x_a = {
 /* b > 4 */
 static struct cond cond_x_b = {
 	.sel = sel_x_b,
+	.colidx = 1,
 	.off = offsetof(struct x, b),
 	.param = 4,
 };
@@ -179,7 +181,7 @@ query_x_a(QUERY_X_CB_DECL(cb))
 	};
 
 	printf("cond-a\n");
-	q_query(&tab_x, cb_x_a, 1, &tab_x.idxs[0], &conds[0]);
+	q_query(&tab_x, cb_x_a, 1, &conds[0]);
 }
 
 void
@@ -190,7 +192,7 @@ query_x_b(QUERY_X_CB_DECL(cb))
 	};
 
 	printf("cond-b\n");
-	q_query(&tab_x, cb_x_b, 1, &tab_x.idxs[1], &conds[0]);
+	q_query(&tab_x, cb_x_b, 1, &conds[0]);
 }
 
 void
@@ -202,7 +204,7 @@ query_x_a_b(QUERY_X_CB_DECL(cb))
 	};
 
 	printf("cond-a AND cond-b\n");
-	q_query(&tab_x, cb_x_a_b, 2, &tab_x.idxs[0], &conds[0]);
+	q_query(&tab_x, cb_x_a_b, 2, &conds[0]);
 }
 
 /******************************************************************************/

@@ -110,14 +110,13 @@ q_idx(struct tab *tab, int dim)
 /******************************************************************************/
 
 void
-q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, int *idxs[],
-    struct cond *conds[])
+q_query(struct tab *tab, ITER_CB_DECL(cb), int dim, struct cond *conds[])
 {
 	struct sel sels[dim];
 	int i;
 
 	for (i = 0; i < dim; i++) {
-		sels[i].idx.vec = idxs[i];
+		sels[i].idx.vec = tab->idxs[conds[i]->colidx];
 		sels[i].idx.len = tab->nrows;
 		q_sel(tab, &sels[i], conds[i]);
 	}
