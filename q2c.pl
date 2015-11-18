@@ -6,17 +6,24 @@ while ($line = <>) {
 	}
 	if ($line =~ m/^COLUMN\s+(.*?)\s+(.*?)$/) {
 		my ($type, $name) = ($1, $2);
-		my ($array);
+		my ($size, $array);
 		print STDERR "type: ", $type, "\n";
 		print STDERR "name: ", $name, "\n";
 		if ($type =~ m/^(.*?)\((\d+?)\)$/) {
 			$type = $1;
 			$array = $2;
 		} else {
-			undef($array);
+			undef $array;
+		}
+		if ($type =~ m/^(.*?)(\d+?)$/) {
+			$type = $1;
+			$size = $2;
+		} else {
+			undef $size;
 		}
 		push @{$tab->{cols}}, {
 			"type" => $type,
+			"size" => $size,
 			"name" => $name,
 			"array" => $array,
 		};
@@ -24,26 +31,27 @@ while ($line = <>) {
 }
 # XXX do checks
 my $type2c = {
-	"I8" => "int8_t ",
-	"U8" => "uint8_t ",
-	"I16" => "int16_t ",
-	"U16" => "uint16_t ",
-	"I32" => "int32_t ",
-	"U32" => "uint32_t ",
-	"I64" => "int64_t ",
-	"U64" => "uint64_t ",
+	"I" => "int\%d_t ",
+	"U" => "uint\d_t ",
 	"PTR" => "void *",
 };
 printf "struct %s {\n", $tab->{name};
 my $pad = 1;
 foreach my $col (@{$tab->{cols}}) {
-	if (not $col->{name}) {
-		$col->{name} = sprintf "__pad%d", $pad++;
+	my ($type, $name);
+	if ($col->{size}) {
+		$type = sprintf $type2c->{$col->{type}}, $col->{size};
+	} else {
+		$type = $type2c->{$col->{type}};
 	}
 	if ($col->{array}) {
-		printf "\t%s%s[%s];\n", $type2c->{$col->{type}}, $col->{name}, $col->{array};
+		$name = sprintf "%s[%s]", $col->{name}, $col->{array};
 	} else {
-		printf "\t%s%s;\n", $type2c->{$col->{type}}, $col->{name};
+		$name = sprintf "%s", $col->{name};
 	}
+	if (not $name) {
+		$name = sprintf "__pad%d", $pad++;
+	}
+	printf "\t%s%s;\n", $type, $name;
 }
 printf "};\n";
