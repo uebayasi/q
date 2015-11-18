@@ -35,7 +35,11 @@ my $type2c = {
 	"PTR" => "void *",
 };
 printf "struct %s {\n", $tab->{name};
+my $pad = 1;
 foreach my $col (@{$tab->{cols}}) {
+	if (not $col->{name}) {
+		$col->{name} = sprintf "__pad%d", $pad++;
+	}
 	if ($col->{array}) {
 		printf "\t%s%s[%s];\n", $type2c->{$col->{type}}, $col->{name}, $col->{array};
 	} else {
