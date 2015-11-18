@@ -85,6 +85,10 @@ sub print_tab_col {
 	printf "\t%s%s;\n", $type, $name;
 }
 
+sub print_q_col {
+	# XXX
+}
+
 sub print_tab {
 	my ($tab) = @_;
 	$pad = 1;
@@ -98,6 +102,9 @@ sub print_tab {
 sub print_query {
 	my ($q) = @_;
 	printf "struct %s {\n", $q->{name};
+	foreach my $col (@{$q->{cols}}) {
+		print_q_col($col);
+	}
 	printf "};\n";
 }
 
@@ -112,11 +119,11 @@ sub main {
 		undef $q;
 	}
 	# XXX do checks
-	foreach my $tab (@{$tabs}) {
-		print_tab($tab);
+	foreach (@{$tabs}) {
+		print_tab($_);
 	}
-	foreach my $q (@{$qs}) {
-		print_tab($q);
+	foreach (@{$qs}) {
+		print_query($_);
 	}
 }
 
