@@ -3,7 +3,7 @@
 use strict;
 
 my ($tab, $tabs);
-my ($query, $queries);
+my ($qry, $qrys);
 my ($pad);
 my $type2c = {
 	"I" => "int\%d_t",
@@ -44,13 +44,13 @@ sub parse_column {
 	};
 }
 
-sub parse_query {
+sub parse_qry {
 	my ($name) = @_;
-	if (defined($query)) {
-		push @{$queries}, $query;
-		undef $query;
+	if (defined($qry)) {
+		push @{$qrys}, $qry;
+		undef $qry;
 	}
-	$query->{name} = $name;
+	$qry->{name} = $name;
 }
 
 sub parse {
@@ -62,7 +62,7 @@ sub parse {
 			parse_column($1, $2);
 		}
 		if ($line =~ m/^QUERY\s+(.*?)$/) {
-			parse_query($1);
+			parse_qry($1);
 		}
 	}
 }
@@ -102,10 +102,10 @@ sub print_tab {
 	printf "};\n";
 }
 
-sub print_query {
-	my ($query) = @_;
-	printf "struct %s {\n", $query->{name};
-	foreach my $col (@{$query->{cols}}) {
+sub print_qry {
+	my ($qry) = @_;
+	printf "struct %s {\n", $qry->{name};
+	foreach my $col (@{$qry->{cols}}) {
 		print_q_col($col);
 	}
 	printf "};\n";
@@ -117,16 +117,16 @@ sub main {
 		push @{$tabs}, $tab;
 		undef $tab;
 	}
-	if (defined($query)) {
-		push @{$queries}, $query;
-		undef $query;
+	if (defined($qry)) {
+		push @{$qrys}, $qry;
+		undef $qry;
 	}
 	# XXX do checks
 	foreach (@{$tabs}) {
 		print_tab($_);
 	}
-	foreach (@{$queries}) {
-		print_query($_);
+	foreach (@{$qrys}) {
+		print_qry($_);
 	}
 }
 
