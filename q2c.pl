@@ -5,7 +5,7 @@ use strict;
 my ($tab, $tabs);
 my ($qry, $qrys);
 my ($pad);
-my $type2c = {
+my $fmts = {
 	"I" => "int\%d_t",
 	"U" => "uint\%d_t",
 };
@@ -71,9 +71,9 @@ sub print_tab_col {
 	my ($col) = @_;
 	my ($type, $name, $array);
 	if ($col->{size}) {
-		$type = sprintf $type2c->{$col->{type}}, $col->{size};
+		$type = sprintf $fmts->{$col->{type}}, $col->{size};
 	} else {
-		$type = $type2c->{$col->{type}};
+		$type = $fmts->{$col->{type}};
 	}
 	if ($col->{array}) {
 		$array = sprintf "[%s]", $col->{array};
